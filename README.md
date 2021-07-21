@@ -3,7 +3,7 @@ This repository contains configuration files for the fish shell on Debian. Custo
 - aliases to launch apt updates and upgrades
 - modified output for upgradable packages
 - aliases to launch Windows games via wine
-- customization to fish commandline using bobthefish configuration
+- customization to fish command line using bobthefish configuration
 
 System Details
 
