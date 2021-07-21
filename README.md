@@ -1,4 +1,12 @@
 # debian-config
+This repository contains configuration files for the fish shell on Debian. Customizations include:
+- aliases to launch apt updates and upgrades
+- modified output for upgradable packages
+- aliases to launch Windows games via wine
+- customization to fish commandline using bobthefish configuration
+
+System Details
+
 OS: Debian GNU/Linux x86_64
 Kernel: 5.10-0-8-amd64
 Uptime: 23 mins
