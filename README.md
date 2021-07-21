@@ -11,7 +11,7 @@ WM Theme: Default
 Theme: elementary [GTK2]
 Icons: elementary-xfce-dark [GTK2]
 Terminal: terminology
-Terminal Font: MesloLGM Nerd Font Mono
+Terminal Font: MesloLGM Nerd Font Mono Regular 10
 CPU: Intel i5-9600K (6) @ 4.600GHz
 GPU: NVIDIA GeForce GTX 980
 Memory: 1484MiB / 15924MiB
