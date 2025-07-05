@@ -1,31 +1,40 @@
 #!/bin/bash
 
-# Ensure running as root
+set -e
+
+# Make sure to run as root
 if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
+  echo "Please run as root (e.g., sudo $0)"
   exit 1
 fi
 
-# Step 18: Comment out bookworm-backports lines in /etc/apt/sources.list
-sed -i '/bookworm-backports/s/^/#/' /etc/apt/sources.list
+# 1. Change /etc/apt/sources.list to point to sid
+sed -i 's/bookworm/sid/g' /etc/apt/sources.list
 
-# Step 19: Change Debian sources to sid and comment out stable/security repos
-sed -i -E 's|(^deb\s+http[^ ]+)(\s+)(main)|# \1 sid \3|' /etc/apt/sources.list
-sed -i -E 's|(^deb\s+http[^ ]+)(\s+)(main)|# \1 sid \3|' /etc/apt/sources.list
-sed -i -E 's|(^deb\s+http[^ ]+)(\s+)(main)|# \1 sid-security \3|' /etc/apt/sources.list
+# 2. Comment out all lines except the first two
+awk 'NR<=2 {print; next} {print "#" $0}' /etc/apt/sources.list > /etc/apt/sources.list.tmp
+mv /etc/apt/sources.list.tmp /etc/apt/sources.list
 
-# Step 19 (continued): update and upgrade
+# 3. Update and upgrade
 apt update
-apt -y upgrade
+apt upgrade -y
 
-# Step 20: Add fish to bottom of ~/.bashrc
+# 4. Add 'fish' to the bottom of ~/.bashrc for user 'mike'
 echo "fish" >> /home/mike/.bashrc
 
-# Step 21: Copy config.fish from git repo to ~/.config/fish
+# 5. Copy config.fish from /home/mike/Git/debian-config to ~/.config/fish/
+# Ensure the target directory exists
 mkdir -p /home/mike/.config/fish
 cp /home/mike/Git/debian-config/config.fish /home/mike/.config/fish/
-chown -R mike:mike /home/mike/.config/fish
 
-# Step 22: Reboot
-echo "System updated to sid. Rebooting now..."
+# Change ownership to 'mike'
+chown -R mike:mike /home/mike/.config/fish
+chown mike:mike /home/mike/.bashrc
+
+# 6. Run autoremove and clean
+apt autoremove -y
+apt clean
+
+# 7. Reboot
+echo "All done. Rebooting now..."
 reboot
