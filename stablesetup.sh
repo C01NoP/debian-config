@@ -32,7 +32,8 @@ apt update
 apt install -y gnome-shell gnome-tweaks nautilus vim fish steam-installer \
  mesa-vulkan-drivers libglx-mesa0:i386 mesa-vulkan-drivers:i386 \
  libgl1-mesa-dri:i386 kitty vlc crispy-doom dsda-doom gzdoom gnome-calculator \
- timeshift deja-dup flatpak ffmpegthumbnailer curl dkms linux-headers-amd64 apt-listbugs
+ timeshift deja-dup flatpak ffmpegthumbnailer curl dkms linux-headers-amd64 apt-listbugs \
+ firefox-esr
 
 # 9. Activate Flatpak
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
