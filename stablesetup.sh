@@ -1,43 +1,62 @@
 #!/bin/bash
 
-# Install required packages
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# 1. Install sudo as root
 apt update
+apt install -y sudo git vim
+
+# 2. Grant user 'mike' sudo access
+usermod -aG sudo mike
+
+# 3. Update /etc/apt/sources.list to include non-free repository
+# Backup original sources.list
+cp /etc/apt/sources.list /etc/apt/sources.list.bak
+
+# Add non-free to existing repositories
+sed -i '/^deb / s/$/ non-free/' /etc/apt/sources.list
+
+apt update
+
+# 4. Install packages via apt
 apt install -y gnome-shell gnome-tweaks nautilus vim fish steam kitty vlc crispy-doom dsda-doom gnome-calculator timeshift deja-dup flatpak ffmpegthumbnailer curl wget dkms linux-headers-amd64
 
-# 8. Activate Flatpak
+# 5. Activate flatpak
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# 9. Clone Tela-icon-theme
-git clone https://github.com/vinceliuice/Tela-icon-theme.git "$HOME_DIR/Git/Tela-icon-theme"
+# 6. Clone and install Tela-icon-theme
+sudo -u mike bash -c '
+mkdir -p /home/mike/Git
+cd /home/mike/Git
+git clone https://github.com/vinceliuice/Tela-icon-theme.git
+cd Tela-icon-theme
+./install.sh
+'
 
-# 10. Run install.sh in Tela-icon-theme
-bash "$HOME_DIR/Git/Tela-icon-theme/install.sh"
+# 7. Clone and install Orchis-theme
+sudo -u mike bash -c '
+cd /home/mike/Git
+git clone https://github.com/vinceliuice/Orchis-theme.git
+cd Orchis-theme
+./install.sh
+'
 
-# 11. Clone Orchis-theme
-git clone https://github.com/vinceliuice/Orchis-theme.git "$HOME_DIR/Git/Orchis-theme"
-bash "$HOME_DIR/Git/Orchis-theme/install.sh"
+# 8. Clone and install Qogir-icon-theme
+sudo -u mike bash -c '
+cd /home/mike/Git
+git clone https://github.com/vinceliuice/Qogir-icon-theme.git
+cd Qogir-icon-theme
+./install.sh
+'
 
-# 13. Clone Qogir-icon-theme
-git clone https://github.com/vinceliuice/Qogir-icon-theme.git "$HOME_DIR/Git/Qogir-icon-theme"
-bash "$HOME_DIR/Git/Qogir-icon-theme/install.sh"
+# 9. Install Fisher
+sudo -u mike fish -c '
+curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
+fisher install jorgebucaran/fisher
+'
 
-# 15. Install Fisher
-su - "$USER" -c 'curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher'
+# 10. Install bobthefish theme
+sudo -u mike fish -c 'fisher install oh-my-fish/theme-bobthefish'
 
-# 16. Install bobthefish theme
-su - "$USER" -c 'fish -c "fisher install oh-my-fish/theme-bobthefish"'
-
-# 17. Move fish.config from /root/Git/debian-config to /home/mike/.config
-mkdir -p "$HOME_DIR/.config"
-mv "/root/Git/debian-config/fish.config" "$HOME_DIR/.config/"
-
-# 18. Move kitty.config from /root/Git/debian-config to /home/mike/.config/kitty
-mkdir -p "$HOME_DIR/.config/kitty"
-mv "/root/Git/debian-config/kitty.config" "$HOME_DIR/.config/kitty/"
-
-# 19. Copy entire /root/Git to /home/mike/Git
-rm -rf "$GIT_DIR"
-cp -r "/root/Git" "$GIT_DIR"
-chown -R "$USER":"$(id -gn $USER)" "$GIT_DIR"
-
-# End of debian-config/stablesetup.sh
+echo "Setup complete! Please reboot or relog to ensure all group changes take effect."
