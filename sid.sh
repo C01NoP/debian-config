@@ -10,6 +10,9 @@ sudo mv /etc/apt/sources.list.new /etc/apt/sources.list
 # Run update and upgrade
 sudo apt update && sudo apt upgrade -y
 
+# Install firefox
+sudo apt install firefox -y
+
 # Step 20: Add 'fish' to the bottom of ~/.bashrc
 echo "fish" >> ~/.bashrc
 
