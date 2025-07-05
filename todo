@@ -1,11 +1,1 @@
-add non-free to /etc/apt/sources.list
-add systemctl set-default graphical.target
-remove modernized backports
-add bookworm-backports to /etc/apt/sources.list
-split stable.sh and sid.sh
-need to reboot after stable builds the kernel modules and continue sid installation after reboot
-add tela, qogir and orchis git repos
-run ./install.sh from those repos
-set theme and icons respectively
-adding fish to .bashrc set exec fish
-add sudo apt autremove ; sudo apt clean all
+return to sid upgrade after freeze period is over
