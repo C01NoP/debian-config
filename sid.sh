@@ -1,25 +1,34 @@
 #!/bin/bash
 
-# Step 18: Change /etc/apt/sources.list to point to sid instead of bookworm
-sudo sed -i 's|/bookworm|/sid|g' /etc/apt/sources.list
+# Step 1: Backup the current sources.list
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
-# Step 19: Comment out lines that do NOT contain 'sid'
-sudo awk 'NR <= 5 {print; next} {if ($0 ~ /sid/) {print} else {print "#" $0}}' /etc/apt/sources.list | sudo tee /etc/apt/sources.list.new
-sudo mv /etc/apt/sources.list.new /etc/apt/sources.list
+# Step 2: Replace deb and deb-src lines with the specified lines
+sudo sed -i \
+  -e 's|^deb .*|deb http://deb.debian.org/debian/ sid main contrib non-free-firmware non-free|' \
+  -e 's|^deb-src .*|deb-src http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware|' \
+ /etc/apt/sources.list
 
-# Run update and upgrade
+# Step 3: Comment out lines that are not the desired ones
+sudo sed -i -E '
+  /^#/! {
+    /deb http:\/\/deb.debian.org\/debian\/ sid main contrib non-free-firmware non-free/! s/^/# /
+  }
+' /etc/apt/sources.list
+
+# Step 4: Update package lists and upgrade
 sudo apt update && sudo apt upgrade -y
 
-# Install firefox
-sudo apt install firefox -y
+# Step 5: Add 'fish' to the bottom of ~/.bashrc
+echo 'exec fish' >> ~/.bashrc
 
-# Step 20: Add 'fish' to the bottom of ~/.bashrc
-echo "fish" >> ~/.bashrc
-
-# Step 21: Copy config.fish from /home/mike/Git/debian-config to ~/.config/fish/
+# Step 6: Copy config.fish from source to ~/.config/fish/
 mkdir -p ~/.config/fish
 cp /home/mike/Git/debian-config/config.fish ~/.config/fish/
 
-# Step 22: Run autoremove and clean all
+# Step 7: Source the fish config
+fish -c 'source ~/.config/fish/config.fish'
+
+# Step 8: Remove unnecessary packages and clean cache
 sudo apt autoremove -y
 sudo apt clean
