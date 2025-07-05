@@ -1,0 +1,12 @@
+# Append fish to the bottom of ~/.bashrc  
+# Install fisher to manage shell themes  
+curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher  
+# Install bobthefish theme  
+fisher install oh-my-fish/theme-bobthefish  
+# Remove username from gdm login screen
+sudo vim /var/lib/AccountsService/users/mike
+[User]  
+Language=
+XSession=gnome  
+SystemAccount=true  
+
