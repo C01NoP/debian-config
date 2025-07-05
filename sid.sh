@@ -27,7 +27,10 @@ mkdir -p ~/.config/fish
 cp /home/mike/Git/debian-config/config.fish ~/.config/fish/
 
 # Step 7: Source the fish config
-fish -c 'source ~/.config/fish/config.fish'
+source ~/.config/fish/config.fish
+
+# Step 8: Source the kitty config
+cp /home/mike/Git/debian-config/kitty.conf ~/.config/kitty/
 
 # Step 8: Remove unnecessary packages and clean cache
 sudo apt autoremove -y
