@@ -19,11 +19,11 @@ A script called stablesetup.sh does the following:
 Language=
 XSession=gnome  
 SystemAccount=true  
- A script called kernel.sh that does the following:
-     17. Add bookworm-backports to /etc/apt/sources.list
-     18. Execute the following commands : sudo apt install -t bookworm-backports linux-image-    amd64 linux-headers-amd64
-     19.  Use dkms to build kernel modules for the new kernel
-     20. Reboot the machine
+A script called kernel.sh does the following:
+17. Add bookworm-backports to /etc/apt/sources.list
+18. Execute the following commands : sudo apt install -t bookworm-backports linux-image-    amd64 linux-headers-amd64
+19.  Use dkms to build kernel modules for the new kernel
+20. Reboot the machine
 A script called nvidia.sh does the following:
 21. curl -fSsL https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/3bf863cc.pub | sudo gpg --dearmor | sudo tee /usr/share/keyrings/nvidia-drivers.gpg > /dev/null 2>&1
 22. Put the nvidia driver in apt sources: echo 'deb [signed-by=/usr/share/keyrings/nvidia-drivers.gpg] https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/ /' | sudo tee /etc/apt/sources.list.d/nvidia-drivers.list
