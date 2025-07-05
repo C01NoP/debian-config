@@ -1,0 +1,21 @@
+if status is-interactive
+alias upd="sudo apt update"
+alias up="upd ; sudo apt upgrade -V ; flatpak update ; multipull ; protonup ; cd ~"
+alias clean="sudo apt clean all"
+alias aptarm="sudo apt autoclean"
+alias arm="sudo apt autoremove"
+alias multipull="cd ~/Git; find . -mindepth 1 -maxdepth 1 -type d -print -exec git -C {} pull \;"
+alias hc="history clear"i
+alias fru="flatpak remove --unused"
+alias hc="history clear"
+alias wads="cd /home/mike/wads"
+alias mobo="cat /sys/devices/virtual/dmi/id/board_{vendor,name,version}"
+alias birthday="stat -c %w /"
+alias remconf="dpkg -l | grep '^rc' | awk '{print $2}' | sudo xargs dpkg --purge"
+alias remconf2="dpkg -l | grep '^rc' | awk '{print $2}' | xargs sudo apt-get --purge remove -y"
+alias fishconf="vim ~/.config/fish/config.fish"
+alias fishsource="source ~/.config/fish/config.fish"
+alias lsf="export SDL_FORCE_SOUNDFONTS=1"
+alias asf="export SDL_SOUNDFONTS=/home/mike/wads/SC-55.sf2"
+alias reboot="sudo reboot"
+end
