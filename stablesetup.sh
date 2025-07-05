@@ -4,7 +4,7 @@ set -e
 
 # 7. Install packages
 apt update
-apt install -y gnome-shell gnome-tweaks nautilus vim fish firefox kitty vlc crispy-doom dsda-doom gnome-calculator timeshift deja-dup flatpak ffmpegthumbnailer curl wget dkms linux-headers-amd64
+apt install -y gnome-shell gnome-tweaks nautilus vim fish steam kitty vlc crispy-doom dsda-doom gnome-calculator timeshift deja-dup flatpak ffmpegthumbnailer curl wget dkms linux-headers-amd64
 
 # 8. Activate flatpak
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -43,9 +43,5 @@ cp -r "$ROOT_HOME/Git" "$GIT_DIR"
 
 # Change ownership to user
 chown -R "$USER":"$USER" "$HOME_DIR"
-
-# 18. Reboot
-echo "Setup complete. Rebooting now..."
-reboot
 
 # --- End of debian-config/stablesetup.sh ---
