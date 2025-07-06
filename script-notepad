@@ -1,25 +1,26 @@
-A script called stablesetup.sh does the following:  
-1.	Install sudo as root  
-2.	Grant user mike sudo access by running usermod –aG sudo mike as root  
-3.	Install git wget and vim via apt  
-4.	Update /etc/apt/sources.list to include the contrib and non-free repository on the deb and deb-src lines  
-5.	Add 32-bit: dpkg --add-architecture i386  
+A script called stablesetup.sh does the following:
+1.	Install sudo as root
+2.	Grant user mike sudo access by running usermod –aG sudo mike as root
+3.	Install git wget and vim via apt.
+4.	Update /etc/apt/sources.list to include the contrib and non-free repository on the deb and deb-src lines
+5.	Add 32-bit: dpkg --add-architecture i386
 6.	Add the DRD repo: sudo wget -O /etc/apt/trusted.gpg.d/drdteam.gpg https://debian.drdteam.org/drdteam.gpg ; sudo apt-add-repository 'deb https://debian.drdteam.org/ stable multiverse'
 7.	From the stablesetup.sh file, install the following packages: gnome-shell, gnome-tweaks, nautilus, vim, fish, steam-installer, mesa-vulkan-drivers libglx-mesa0:i386 mesa-vulkan-drivers:i386 libgl1-mesa-dri:i386, kitty, vlc, crispy-doom, dsda-doom, gzdoom, gnome-calculator, timeshift, deja-dup, flatpak, ffmpegthumbnailer, vlc, curl, dkms, linux-headers-amd64
-8.	Activate flatpak by doing the following: flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo  
-9.	Clone this repo into /home/mike/Git/Tela-icon-theme: https://github.com/vinceliuice/Tela-icon-theme.git  
-10.	Run the ./install.sh script in that repo  
-11.	Clone this repo into /home/mike/Git/Orchis-theme: https://github.com/vinceliuice/Orchis-theme.git  
-12.	Run the ./install.sh script in that repo  
-13.	Clone this repo into /home/mike/Git/Qogir-icon-theme: https://github.com/vinceliuice/Qogir-icon-theme.git  
-14.	Run the ./install.sh script in that repo  
-15.	Create the file sudo nano /var/lib/AccountsService/users/mike  
-16.	In the file above, add: 
+8.	Activate flatpak by doing the following: flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+9.	Clone this repo into /home/mike/Git/Tela-icon-theme: https://github.com/vinceliuice/Tela-icon-theme.git
+10.	Run the ./install.sh script in that repo
+11.	Clone this repo into /home/mike/Git/Orchis-theme: https://github.com/vinceliuice/Orchis-theme.git
+12.	Install and link the dark/green variant by running ./install.sh -c dark -t green -l from that repo 
+13.	Install and link the dark variant by running ./install.sh –c dark -l
+14.	Clone this repo into /home/mike/Git/Qogir-icon-theme: https://github.com/vinceliuice/Qogir-icon-theme.git
+15.	Run the ./install.sh script in that repo
+16.	Create the file sudo nano /var/lib/AccountsService/users/mike
+17.	In the file above, add: 
 [User]  
 Language=
 XSession=gnome  
 SystemAccount=true  
-A script called kernel.sh does the following:
+A script called kernel.sh that does the following:
 17. Add bookworm-backports to /etc/apt/sources.list
 18. Execute the following commands : sudo apt install -t bookworm-backports linux-image-    amd64 linux-headers-amd64
 19.  Use dkms to build kernel modules for the new kernel
