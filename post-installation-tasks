@@ -10,3 +10,4 @@ Language=
 XSession=gnome  
 SystemAccount=true  
 # Extensions list: blur my shell, brightness control using ddcutil, CHC-E (custom hot corners-extended), dynamic panel, hide top bar, night light slider updated, user themes
+# Point sources to sid branch (if applicable)
