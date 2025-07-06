@@ -9,4 +9,4 @@ sudo vim /var/lib/AccountsService/users/mike
 Language=
 XSession=gnome  
 SystemAccount=true  
-
+# Extensions list: blur my shell, brightness control using ddcutil, CHC-E (custom hot corners-extended), dynamic panel, hide top bar, night light slider updated, user themes
