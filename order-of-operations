@@ -1,0 +1,17 @@
+# Install debian netinstall iso. Use minimal system configuration with no desktop environment selected.  
+# Login to new installation as root.    
+# Clone https://github.com/c01nop/debian-config into mkdir Git.    
+# chmod +x debinit.sh.  
+# Run debinit.sh. Once completed, exit and login and user mike.    
+# Clone https://github.com/c01nop/debian-config into mkdir Git.  
+# chmod +x kernel.sh, nvidia.sh, stablesetup.sh  
+# Run sudo ./stablesetup.sh  
+# Run sudo ./kernel.sh  
+# Run sudo ./nvidia.sh  
+# Boot into system.  
+# Append fish end of ~/.bashrc file.  
+# cp ~/Git/debian-config/config.fish ~/.config/fish/
+# source ~/.config/fish/config.fish
+# cp ~/Git/debian-config/kitty.conf ~/.config/kitty/  
+# Save extensions-settings.dconf locally. Navigate to that directory and import with dconf load /org/gnome/shell/extensions/ < extensions-settings.dconf  
+# Use Gnome Tweak Tool to set theme and icons.  
