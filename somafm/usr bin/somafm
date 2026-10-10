@@ -1,0 +1,398 @@
+#!/usr/bin/perl -w
+# somafm - A command-line client using mplayer
+# Copyright (C) 2017 David Moreno
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+use strict;
+use utf8;
+use File::Basename;
+use Getopt::Long;
+use LWP::Simple qw(get getstore);
+use IPC::Open3;
+use IO::Select;
+use POSIX qw(WNOHANG);
+use Symbol qw(gensym);
+
+binmode(STDOUT, ":utf8");
+
+use constant {
+    URL          => "http://somafm.com/",
+    STATION_DIR  => $ENV{HOME} . "/.config/somafm",
+    BIN          => "mplayer",
+    TIMEOUT      => 5,
+
+    ERROR_OK       => 0,
+    ERROR_LIST     => 1,
+    ERROR_STATIONS => 2,
+    ERROR_GETLIST  => 3,
+    ERROR_UNKNOWN  => 4,
+
+    VERSION => "1.2.1"
+};
+
+my $program_name = fileparse($0);
+
+my $arg = {
+    help    => 0,
+    update  => 0,
+    list    => 0,
+    version => 0
+};
+
+my $stat = {
+    name => undef,
+    desc => undef,
+    pls  => undef
+};
+
+my $mplayer = {
+    sel => undef,
+    pid => undef,
+    in  => undef,
+    out => undef,
+    err => undef
+};
+
+my $current_title = "";
+
+sub help {
+    print "$program_name - Plays stations using mplayer\n",
+          "Usage: $program_name [OPTION] STATION\n\n",
+          "  -u, --update    Downloads the station list\n",
+          "  -l, --list      Displays the available stations\n",
+          "  -h, --help      Shows this message\n",
+          "  -v, --version   Shows program version\n\n",
+          "Not sure what to listen to? Try 'random' as STATION\n";
+}
+
+sub empty_dir {
+    my ($dir) = @_;
+    return 1 if !-d $dir;
+
+    opendir(my $dh, $dir) or return 1;
+    my @files = grep { !/^\.+$/ } readdir($dh);
+    closedir($dh);
+
+    return @files ? 0 : 1;
+}
+
+sub get_dir {
+    my ($dir) = @_;
+    return if !-d $dir;
+
+    opendir(my $dh, $dir) or return;
+    my @files = grep { !/^\.+$/ } readdir($dh);
+    closedir($dh);
+
+    return @files;
+}
+
+sub get_station_data {
+    my $pls = $stat->{pls};
+
+    my ($name) = $pls =~ m{.*/([^/]+)};
+    $name //= $pls;
+    $name =~ s/\.[^.]+$//;
+    $stat->{name} = $name;
+
+    my ($title) =
+        `grep 'Title1' "$pls" 2>/dev/null` =~ /Title1=(.*)/;
+
+    $title //= $name;
+    $title =~ s/^\s+|\s+$//g;
+    $stat->{desc} = "$title\n";
+}
+
+sub get_pls {
+    my ($random) = @_;
+    my @list = get_dir(STATION_DIR);
+
+    return 0 if !@list;
+
+    if ($random) {
+        $stat->{pls} = STATION_DIR . "/" . $list[rand @list];
+    } else {
+        my $station = $ARGV[0] . ".pls";
+        return 0 if !grep { $_ eq $station } @list;
+        $stat->{pls} = STATION_DIR . "/$station";
+    }
+
+    get_station_data();
+    return 1;
+}
+
+sub mk_station_dir {
+    return if -d STATION_DIR;
+
+    mkdir(STATION_DIR)
+        or die "Cannot create " . STATION_DIR . ": $!\n";
+}
+
+sub get_list_remote {
+    my $html = get(URL);
+    return if !$html;
+
+    my @content = split /\n/, $html;
+    my @stations = grep { /^<a href.* >$/ } @content;
+    return if !@stations;
+
+    for my $station (@stations) {
+        my ($name) = $station =~ m{/([^/]+)/};
+        next if !defined $name;
+        $station = URL . "$name.pls";
+    }
+
+    return grep { defined $_ } @stations;
+}
+
+sub update {
+    my @list = get_list_remote();
+
+    if (!@list) {
+        print "ERROR: Cannot get the station list\n";
+        exit(ERROR_LIST);
+    }
+
+    mk_station_dir();
+
+    for my $url (@list) {
+        my ($station) = $url =~ m{.*/([^/]+)};
+        next if !defined $station;
+
+        my $path = STATION_DIR . "/$station";
+        print "- GETing $path\n";
+        getstore($url, $path);
+    }
+
+    print "* Update done\n";
+}
+
+sub list {
+    if (!-d STATION_DIR || empty_dir(STATION_DIR)) {
+        print "ERROR: No stations found\nUse: $program_name --update\n";
+        exit(ERROR_STATIONS);
+    }
+
+    my @files = get_dir(STATION_DIR);
+    if (!@files) {
+        print "ERROR: Cannot get the station list\n";
+        exit(ERROR_GETLIST);
+    }
+
+    print "* Available stations:\n\n";
+
+    for my $file (@files) {
+        my $path = STATION_DIR . "/" . $file;
+        my ($title) =
+            `grep 'Title1' "$path" 2>/dev/null` =~ /Title1=(.*)/;
+
+        $title //= "";
+        $title =~ s/^\s+|\s+$//g;
+
+        (my $name = $file) =~ s/\.[^.]+$//;
+        print "  $name -- $title\n";
+    }
+}
+
+sub arguments {
+    GetOptions(
+        'help|h'    => \$arg->{help},
+        'update|u'  => \$arg->{update},
+        'list|l'    => \$arg->{list},
+        'version|v' => \$arg->{version}
+    ) or do {
+        help();
+        exit(ERROR_OK);
+    };
+
+    if ($arg->{help}) {
+        help();
+        exit(ERROR_OK);
+    }
+    if ($arg->{update}) {
+        update();
+        exit(ERROR_OK);
+    }
+    if ($arg->{list}) {
+        list();
+        exit(ERROR_OK);
+    }
+    if ($arg->{version}) {
+        print "$program_name, version " . VERSION . "\n";
+        exit(ERROR_OK);
+    }
+}
+
+sub online {
+    my $status = system("ping", "-c2", "-n", "-q", "8.8.8.8");
+    return $status == 0;
+}
+
+sub figlet_installed {
+    my $where = `whereis figlet 2>/dev/null`;
+    return $where =~ /\bfiglet\s+\S+/;
+}
+
+sub print_banner {
+    my $name = $stat->{name};
+    my $title = figlet_installed()
+        ? "\n" . `figlet "  $name"`
+        : $name;
+
+    print "* Play: $title\n",
+          " $stat->{desc}",
+          "  Press 'CTRL+C' to exit\n\n";
+}
+
+sub child_alive {
+    return 0 if !$mplayer->{pid};
+
+    my $result = waitpid($mplayer->{pid}, WNOHANG);
+    return $result == 0;
+}
+
+sub close_player_pipes {
+    if ($mplayer->{sel}) {
+        $mplayer->{sel}->remove($mplayer->{out}) if $mplayer->{out};
+        $mplayer->{sel}->remove($mplayer->{err}) if $mplayer->{err};
+    }
+
+    close $mplayer->{in}  if $mplayer->{in};
+    close $mplayer->{out} if $mplayer->{out};
+    close $mplayer->{err} if $mplayer->{err};
+
+    $mplayer->{in}  = undef;
+    $mplayer->{out} = undef;
+    $mplayer->{err} = undef;
+    $mplayer->{sel} = undef;
+}
+
+sub spawn {
+    my ($playlist) = @_;
+    my $err = gensym();
+
+    my $pid = open3(
+        $mplayer->{in},
+        $mplayer->{out},
+        $err,
+        BIN,
+        "-v",
+        "-playlist",
+        $playlist
+    );
+
+    $mplayer->{pid} = $pid;
+    $mplayer->{err} = $err;
+
+    # MPlayer does not need stdin here.
+    close $mplayer->{in};
+    $mplayer->{in} = undef;
+
+    $mplayer->{sel} = IO::Select->new();
+    $mplayer->{sel}->add($mplayer->{out}, $mplayer->{err});
+}
+
+sub extract_title {
+    my ($line) = @_;
+
+    if ($line =~ /Metadata update for StreamTitle:\s*(.+?)\s*$/i) {
+        return $1;
+    }
+
+    if ($line =~ /StreamTitle\s*=\s*(['"])(.*?)\1/i) {
+        return $2;
+    }
+
+    if ($line =~ /^\s*ICY[^']*'([^']*)'/i) {
+        return $1;
+    }
+
+    if ($line =~ /^\s*ICY\s+Info:\s*(.+?)\s*$/i) {
+        my $title = $1;
+        $title =~ s/^StreamTitle\s*=\s*//i;
+        $title =~ s/^['"]|['"]$//g;
+        return $title;
+    }
+
+    return;
+}
+
+sub print_title {
+    return if !$mplayer->{sel};
+
+    my @ready = $mplayer->{sel}->can_read(0.1);
+
+    for my $fh (@ready) {
+        my $line = <$fh>;
+
+        if (!defined $line) {
+            $mplayer->{sel}->remove($fh);
+            next;
+        }
+
+        my $title = extract_title($line);
+        next if !defined $title || $title eq "";
+        next if $title eq $current_title;
+
+        print "$title\n";
+        $current_title = $title;
+    }
+}
+
+sub stop_player {
+    return if !$mplayer->{pid};
+
+    kill("INT", $mplayer->{pid});
+    waitpid($mplayer->{pid}, 0);
+    $mplayer->{pid} = undef;
+    close_player_pipes();
+}
+
+sub sigint {
+    stop_player();
+    print "\n* Stop: $stat->{name}\n";
+    exit(0);
+}
+
+# Main
+arguments();
+
+if (!-d STATION_DIR || empty_dir(STATION_DIR)) {
+    print "ERROR: No stations found\nUse: $program_name --update\n";
+    exit(ERROR_STATIONS);
+}
+
+if (!@ARGV || !get_pls($ARGV[0] eq "random")) {
+    print "ERROR: Unknown station\n";
+    exit(ERROR_UNKNOWN);
+}
+
+print_banner();
+
+$SIG{INT}  = \&sigint;
+$SIG{QUIT} = \&sigint;
+
+$| = 1;
+
+my $playlist = $stat->{pls};
+spawn($playlist);
+
+while (1) {
+    if (!child_alive()) {
+        close_player_pipes();
+        $mplayer->{pid} = undef;
+
+        while (!online()) {
+            sleep(TIMEOUT);
+        }
+
+        $current_title = "";
+        spawn($playlist);
+    }
+
+    print_title();
+}
