@@ -1,0 +1,15 @@
+sudo apt update
+sudo apt install build-essential cmake git \
+    libasound2-dev libmpg123-dev \
+    libsndfile1-dev libfluidsynth-dev
+cd ~/Downloads
+tar -xvzf ZMusic-1.3.0.tar.gz
+cd ZMusic-1.3.0
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -j$(nproc)
+sudo cmake --install .
+sudo ldconfig
+echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/zmusic.conf
+sudo ldconfig
